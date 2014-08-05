@@ -44,13 +44,12 @@ fi
 %{__mkdir} -p %{buildroot}/var/run/%{name}
 %{__mkdir} -p %{buildroot}/opt/stage/%{name}
 %{__mkdir} -p %{buildroot}/etc/sysconfig
-%{__mkdir} -p %{buildroot}/opt/tomcat/%{name}/license
 
 install %{_sourcedir}/openrdf-*-%{version}.war %{_sourcedir}/jmx.browser-1.2.0.war %{buildroot}/opt/stage/%{name}/
 install %{_builddir}/probe.war %{buildroot}/opt/tomcat/%{name}/webapps/
 install %{_sourcedir}/%{name}-sysconfig %{buildroot}/etc/sysconfig/%{name}
 install %{_sourcedir}/%{name}-initscript %{buildroot}/etc/init.d/%{name}
-install %{_sourcedir}/owlim.license %{buildroot}/opt/tomcat/%{name}/license
+install %{_sourcedir}/owlim.license %{buildroot}/etc/
 
 %{__rm} -rf %{buildroot}/opt/tomcat/%{name}/webapps/{docs,examples,ROOT}
 
@@ -86,13 +85,24 @@ fi
 
 %files
 %defattr(-,tomcat,tomcat,-)
-/opt/tomcat/%{name}
+/opt/tomcat/%{name}/bin
 %config /opt/tomcat/%{name}/conf
+/opt/tomcat/%{name}/lib
+/opt/tomcat/%{name}/LICENSE
+/opt/tomcat/%{name}/logs
+/opt/tomcat/%{name}/NOTICE
+/opt/tomcat/%{name}/RELEASE-NOTES
+/opt/tomcat/%{name}/RUNNING.txt
+/opt/tomcat/%{name}/temp
+/opt/tomcat/%{name}/webapps
+/opt/tomcat/%{name}/work
 /opt/owlim-data/%{name}
 /opt/stage/%{name}
 /etc/sysconfig/%{name}
 /var/run/%{name}
+%attr(0600,tomcat,tomcat) /etc/owlim.license
 %attr(0755,root,root) /etc/init.d/%{name}
+
 %changelog
 * Sun Aug 3 2014 phil@postdata.co.uk
 First commit.
