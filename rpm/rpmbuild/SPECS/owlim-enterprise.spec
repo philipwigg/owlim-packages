@@ -44,14 +44,13 @@ fi
 %{__mkdir} -p %{buildroot}/var/run/%{name}
 %{__mkdir} -p %{buildroot}/opt/stage/%{name}
 %{__mkdir} -p %{buildroot}/etc/sysconfig
-
-
+%{__mkdir} -p %{buildroot}/opt/tomcat/%{name}/license
 
 install %{_sourcedir}/openrdf-*-%{version}.war %{_sourcedir}/jmx.browser-1.2.0.war %{buildroot}/opt/stage/%{name}/
 install %{_builddir}/probe.war %{buildroot}/opt/tomcat/%{name}/webapps/
-
 install %{_sourcedir}/%{name}-sysconfig %{buildroot}/etc/sysconfig/%{name}
 install %{_sourcedir}/%{name}-initscript %{buildroot}/etc/init.d/%{name}
+install %{_sourcedir}/owlim.license %{buildroot}/opt/tomcat/%{name}/license
 
 %{__rm} -rf %{buildroot}/opt/tomcat/%{name}/webapps/{docs,examples,ROOT}
 

@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+# chkconfig: 345 99 01 
+# description: Jakarta Tomcat Java Servlets and JSP server
+# processname: java
+
+name=owlim-enterprise
+
+. /etc/rc.d/init.d/functions
+
+# Set Tomcat environment.
+USER=tomcat
+LOCKFILE=/var/lock/${name}
+export BASEDIR=/opt/tomcat/${name}
+export TOMCAT_HOME=$BASEDIR
+export CATALINA_PID=/var/run/${name}/pid
+
+[[ -f /etc/sysconfig/${name} ]] && . /etc/sysconfig/${name}
+
+case "$1" in start)
+
+	tempdir="$TOMCAT_HOME/temp"
+        workdir="$TOMCAT_HOME/work"
+        wardir1="$TOMCAT_HOME/webapps/openrdf-sesame"
+        wardir2="$TOMCAT_HOME/webapps/openrdf-workbench"
+
+        echo Removing temp, work and exploded .war directories ...
+
+        rm -rf $tempdir/* $workdir/* $wardir1 $wardir2
+
+	echo -n "Starting ${name}: "
+        status -p $CATALINA_PID ${name} > /dev/null && failure || (su -p -s /bin/sh $USER -c "$TOMCAT_HOME/bin/catalina.sh start" > /dev/null && (touch $LOCKFILE ; success))
+        echo
+        ;;
+  stop)
+        echo -n "Shutting down ${name}: "
+        status -p $CATALINA_PID ${name} > /dev/null && su -p -s /bin/sh $USER -c "$TOMCAT_HOME/bin/catalina.sh stop" > /dev/null && (rm -f $LOCKFILE ; success) || failure
+        echo
+        echo Checking if Tomcat has stopped ...
+        pgrep -fu tomcat ${name} > /dev/null 2>&1
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && echo Tomcat still running, waiting 30 seconds ...
+        [ $RETVAL -eq 1 ] && echo Tomcat has stopped successfully. && exit
+        for i in {1..30}
+        do
+                pgrep -fu tomcat ${name} > /dev/null 2>&1
+                RETVAL=$?
+                [ $RETVAL -eq 1 ] && exit
+                sleep 1
+                echo -n .
+        done
+        echo .
+        ;;
+  restart)
+        $0 stop
+        $0 start
+        ;;
+  condrestart)
+       [ -e $LOCKFILE ] && $0 restart
+       ;;
+  status)
+        status -p $CATALINA_PID ${name}
+        ;;
+  *)
+        echo "Usage: $0 {start|stop|restart|condrestart|status}"
+        exit 1
+        ;;
+esac

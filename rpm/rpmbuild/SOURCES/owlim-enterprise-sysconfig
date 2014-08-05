@@ -1,0 +1,10 @@
+# Owlim data directory.
+export CATALINA_OPTS="${CATALINA_OPTS} -Dinfo.aduna.platform.appdata.basedir=/opt/owlim-data/${name}"
+# Owlim Piplines dir.
+export CATALINA_OPTS="${CATALINA_OPTS} -DGATE_HOME=/opt/owlim-data/${name}/openrdf-sesame/repositories/em-repo"
+# Owlim license directory.
+export CATALINA_OPTS="${CATALINA_OPTS} -Dowlim-license=/opt/tomcat/${name}/license/owlim.license"
+# Owlim Memory Settings
+export CATALINA_OPTS="${CATALINA_OPTS} -Xmx1560m -Druleset=owl-horst-optimized -Dentity-index-size=0 -Dcache-memory=730m -Dtuple-index-memory=730m -DenablePredicateList=false -Dpredicate-memory=0 -Dfts-memory=0 -DftsIndexPolicy=never -DftsLiteralsOnly=true -Denable-context-index=true -Din-memory-literal-properties=false -Dtransaction-mode=safe -Dtransaction-isolation=true -Drepository-type=file-repository"
+# GC Options
+export CATALINA_OPTS="${CATALINA_OPTS} -verbose:gc -verbose:sizes -Xloggc:/opt/tomcat/$name/logs/gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintTenuringDistribution -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+DisableExplicitGC"
