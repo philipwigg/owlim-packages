@@ -1,12 +1,8 @@
+include epel
+
 package { 'puppet-lint':
   provider => gem
 }
-
-package { 'epel-release':
-  provider => 'rpm',
-  source => 'https://anorien.csc.warwick.ac.uk/mirrors/epel/6/i386/epel-release-6-8.noarch.rpm'
-}
-
 
 package { [ 'autoconf',
             'automake',
@@ -25,5 +21,5 @@ package { [ 'autoconf',
             'java-1.7.0-openjdk',
             'tomcat-native']:
   ensure => present,
-  require => Package['epel-release']
+  require => Class['epel']
 }
