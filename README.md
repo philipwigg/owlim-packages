@@ -62,4 +62,18 @@ Probe - http://192.168.33.10:8080/probe/
 
 OWLIM Tomcat Directory - `/opt/tomcat/owlim-enterprise`<br>
 OWLIM Data Directory - `/opt/owlim-data/owlim-enterprise`<br>
-OWLIM JVM Options - `/etc/sysconfig/owlim-enterprise`
+Sesame Logs Directory - `/opt/owlim-data/owlim-enterprise/openrdf-sesame/logs`<br>
+OWLIM JVM Options - `/etc/sysconfig/owlim-enterprise`<br>
+OWLIM init script - `/etc/init.d/owlim-enterprise`
+
+#### Stopping and starting
+
+Olwim is configured with an SysV init script and added a service.
+
+    sudo service owlim-enterprise stop
+    sudo service owlim-enterprise start
+    sudo service owlim-enterprise restart
+
+The init script can be configured to send a SIGKILL to OWLIM if it doesn't shut down within a configurable time limit. This can be useful if in development or C.I. environments.
+
+Take a look inside `/etc/init.d/owlim-enterprise` to set these options.
