@@ -6,16 +6,22 @@
 
 . /etc/rc.d/init.d/functions
 
+set -o nounset
+
 # This is the user that the Tomcat daemon will run as.
 TOMCAT_USER=tomcat
 
 TOMCAT_NAME=owlim-enterprise
 BASEDIR=/opt/tomcat/$TOMCAT_NAME
 LOCKFILE=/var/lock/$TOMCAT_NAME
-CATALINA_PID=/var/run/$TOMCAT_NAME/pid
+export TOMCAT_HOME=$BASEDIR
+export CATALINA_PID=/var/run/$TOMCAT_NAME/pid
+export CATALINA_OPTS=""
 
+# The script will send a SIGKILL to the Owlim process if FORCE_KILL is set to 'true'. It will wait for FORCE_KILL_WAIT seconds before it does this to allow Owlim to shut down gracefully.
+# This is intended for development or CI environments. You SHOULD NOT ENABLE THIS ON PRODUCTION SYSTEMS.
 FORCE_KILL=false
-FORCE_KILL_WAIT=5
+FORCE_KILL_WAIT=60
 
 # These directories are deleted during a restart, just in case an upgrade of Owlim has happened.
 TEMPDIR="$TOMCAT_HOME/temp"
@@ -23,51 +29,51 @@ WORKDIR="$TOMCAT_HOME/work"
 WARDIR1="$TOMCAT_HOME/webapps/openrdf-sesame"
 WARDIR2="$TOMCAT_HOME/webapps/openrdf-workbench"
 
-export TOMCAT_HOME=$BASEDIR
+### Main part of the script starts here.
 
-if [ -z $TOMCAT_HOME -a -z $TOMCAT_NAME ]; then
-	echo Either TOMCAT_HOME or TOMCAT_NAME is not set. Exiting ...
-	exit 1
-fi
-
+# Load the configuration file in /etc/sysconfig if it exists.
 [[ -f /etc/sysconfig/$TOMCAT_NAME ]] && . /etc/sysconfig/$TOMCAT_NAME
 
-function check_stop() {
-        echo ; echo Waiting $FORCE_KILL_WAIT seconds for Owlim to shut down ...
+function is_running() {
+       	pgrep -fu tomcat $TOMCAT_NAME > /dev/null 2>&1
+	RETVAL=$?
+       	return $RETVAL
+}
+
+function force_kill() {
+	echo ; echo -n "Sending a SIGKILL to the Owlim process now: "
+	pkill -9 -fu tomcat $TOMCAT_NAME > /dev/null 2>&1
+	sleep 1 ; success ; rm -f $LOCKFILE ; echo
+}
+
+function force_stop() {
+        echo ; echo -n "Waiting $FORCE_KILL_WAIT seconds for Owlim to shut down "
 	COUNTER=0
 	while [ $COUNTER -lt $FORCE_KILL_WAIT ]; do
-        	pgrep -fu tomcat $TOMCAT_NAME > /dev/null 2>&1
-        	RETVAL=$?
-        	[ $RETVAL -eq 1 ] && echo Tomcat has stopped successfully. && exit 0
+        	is_running || (success ; echo ; break)
                 sleep 1
                 echo -n .
 		let COUNTER=COUNTER+1
         done
 	echo
-        if $FORCE_KILL; then
-                echo Forcing Tomcat to shutdown now ...
-                pkill -9 -fu tomcat ${name} > /dev/null 2>&1
-                sleep 1
-                echo Done.
-        else
-                echo Owlim is still running, but FORCE_KILL is not set so not going to do anything. 
-		exit 1
-        fi
+        ([ "$FORCE_KILL" = "true" ] && force_kill) || (echo; echo "Owlim did not stop. FORCE_KILL is not set so you will need to shut down Owlim manually." ; echo ; exit 1)
 }
 
 case "$1" in start)
 
         echo Removing temp, work and exploded .war directories ...
         rm -rf $TEMPDIR/* $WORKDIR/* $WARDIR1 $WARDIR2
-
+	is_running && echo $TOMCAT_NAME seeems to be already running!
 	echo -n "Starting $TOMCAT_NAME: "
         status -p $CATALINA_PID $TOMCAT_NAME > /dev/null && failure || (su -p -s /bin/sh $TOMCAT_USER -c "$TOMCAT_HOME/bin/catalina.sh start" > /dev/null && (touch $LOCKFILE ; success))
         echo
         ;;
   stop)
+	is_running || echo $TOMCAT_NAME doesn\'t seem to be started?
         echo -n "Shutting down $TOMCAT_NAME: "
-        status -p $CATALINA_PID $TOMCAT_NAME > /dev/null && su -p -s /bin/sh $TOMCAT_USER -c "$TOMCAT_HOME/bin/catalina.sh stop" > /dev/null && (rm -f $LOCKFILE ; success) || failure
-	check_stop
+        status -p $CATALINA_PID $TOMCAT_NAME > /dev/null && su -p -s /bin/sh $TOMCAT_USER -c "$TOMCAT_HOME/bin/catalina.sh stop" > /dev/null && (success ; rm -f $LOCKFILE) || failure
+	echo
+	is_running && force_stop
         ;;
   restart)
         $0 stop

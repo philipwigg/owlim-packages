@@ -1,5 +1,5 @@
 # Owlim data directory.
-export CATALINA_OPTS="${CATALINA_OPTS} -Dinfo.aduna.platform.appdata.basedir=/opt/owlim-data/${name}"
+export CATALINA_OPTS="${CATALINA_OPTS} -Dinfo.aduna.platform.appdata.basedir=/opt/owlim-data/$TOMCAT_NAME"
 
 # Owlim license directory.
 export CATALINA_OPTS="${CATALINA_OPTS} -Dowlim-license=/etc/owlim.license"
@@ -8,10 +8,10 @@ export CATALINA_OPTS="${CATALINA_OPTS} -Dowlim-license=/etc/owlim.license"
 export CATALINA_OPTS="${CATALINA_OPTS} -Xmx1560m -Xms1560m -XX:MaxPermSize=256m"
 
 # Owlim plugins dir.
-export CATALINA_OPTS="${CATALINA_OPTS} -Dregister-external-plugins=/opt/app/owlim-data/${name}/plugins"
+export CATALINA_OPTS="${CATALINA_OPTS} -Dregister-external-plugins=/opt/app/owlim-data/$TOMCAT_NAME/plugins"
 
 # GC Options
-export CATALINA_OPTS="${CATALINA_OPTS} -verbose:gc -verbose:sizes -Xloggc:/opt/tomcat/$name/logs/gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintTenuringDistribution -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+DisableExplicitGC"
+export CATALINA_OPTS="${CATALINA_OPTS} -verbose:gc -verbose:sizes -Xloggc:/opt/tomcat/$TOMCAT_NAME/logs/gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintTenuringDistribution -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+DisableExplicitGC"
 
 # Some example repo config. If you enable this it will take precedence and override any configuration specified during the repo creation.
 #export CATALINA_OPTS="${CATALINA_OPTS} -Druleset=owl-horst-optimized -Dentity-index-size=1500000 -Dcache-memory=730m -Dtuple-index-memory=730m -DenablePredicateList=false -Dpredicate-memory=0 -Dfts-memory=0 -DftsIndexPolicy=never -DftsLiteralsOnly=true -Denable-context-index=true -Din-memory-literal-properties=false -Dtransaction-mode=safe -Dtransaction-isolation=true -Drepository-type=file-repository"
