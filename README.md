@@ -1,14 +1,11 @@
 owlim-packages
 ==============
 
-Create .rpm and .deb files for the Owlim-Enterprise Triplestore from Ontotext.
-
 # Introduction
 
- - Build operating system packages for the Owlim triple-store from Ontotext.
+ - Build operating system packages for the OWLIM-Enterprise triple-store from Ontotext.
  - Ships with useful init scripts and default configuration.
- - A simple way to get a local Owlim development environment up and running.
-
+ - A simple way to get a local OWLIM development environment up and running.
 
 # Building the RPM
 
@@ -22,12 +19,18 @@ They files you will need are:-
     openrdf-sesame-7.4.38.war
     owlim.license
 
+The version number of OWLIM-Enterprise you receive may be different. You will find the .war files inside the OWLIM .zip file you receive or from the Ontotext Maven repository.
+
 Update `rpm/rpmbuild/SPEC/owlim-enterprise.spec` and change the `Version:` tag to match the version of Owlim-Enterprise you have.
+
+If you want to use the Vagrant VM to build the packages or to use for OWLIM, you will need:-
+ - Vagrant (https://www.vagrantup.com/)
+ - VirtualBox (https://www.virtualbox.org/)
 
 #### Build and install the RPM
 
     git clone git@github.com:philipwigg/owlim-packages.git
-    cd owlim-package/rpm
+    cd owlim-packages/rpm
     vagrant up
     [Wait for the VM start up and to provision]
     vagrant ssh
@@ -35,7 +38,7 @@ Update `rpm/rpmbuild/SPEC/owlim-enterprise.spec` and change the `Version:` tag t
     rpmbuild -bb rpmbuild/SPECS/owlim-enterprise.spec
     sudo rpm -i rpmbuild/RPMS/noarch/owlim-enterprise-5.4.7348-1.noarch.rpm
 
-That's it! You can now start using Owlim-Enterprise by browsing the Workbench URL below.
+That's it! You can now start using OWLIM-Enterprise by browsing the Workbench URL below.
 
 You will find the .rpm in the `~vagrant/rpmbuild/RPMS/noarch/` directory on your Vagrant VM.
 
@@ -43,7 +46,7 @@ Because this is a Vagrant shared folder, it's there inside `owlim-packages/rpm/r
 
 # Configuration and URLs
 
-The packages install Owlim-Enterprise using Tomcat as a container.
+The packages install OWLIM-Enterprise using Tomcat as a container.
 
 It will download the latest version of Tomcat from the internet during the build.
 
@@ -57,6 +60,6 @@ Probe - http://192.168.33.10:8080/probe/
 
 #### Default File Locations
 
-Owlim Tomcat Directory - `/opt/tomcat/owlim-enterprise`<br>
-Owlim Data Directory - `/opt/owlim-data/owlim-enterprise`<br>
-Owlim JVM Options - `/etc/sysconfig/owlim-enterprise`
+OWLIM Tomcat Directory - `/opt/tomcat/owlim-enterprise`<br>
+OWLIM Data Directory - `/opt/owlim-data/owlim-enterprise`<br>
+OWLIM JVM Options - `/etc/sysconfig/owlim-enterprise`
