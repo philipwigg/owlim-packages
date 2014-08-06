@@ -4,52 +4,70 @@
 # description: Jakarta Tomcat Java Servlets and JSP server
 # processname: java
 
-name=owlim-enterprise
-
 . /etc/rc.d/init.d/functions
 
-# Set Tomcat environment.
-USER=tomcat
-LOCKFILE=/var/lock/${name}
-export BASEDIR=/opt/tomcat/${name}
-export TOMCAT_HOME=$BASEDIR
-export CATALINA_PID=/var/run/${name}/pid
+# This is the user that the Tomcat daemon will run as.
+TOMCAT_USER=tomcat
 
-[[ -f /etc/sysconfig/${name} ]] && . /etc/sysconfig/${name}
+TOMCAT_NAME=owlim-enterprise
+BASEDIR=/opt/tomcat/$TOMCAT_NAME
+LOCKFILE=/var/lock/$TOMCAT_NAME
+CATALINA_PID=/var/run/$TOMCAT_NAME/pid
+
+FORCE_KILL=false
+FORCE_KILL_WAIT=5
+
+# These directories are deleted during a restart, just in case an upgrade of Owlim has happened.
+TEMPDIR="$TOMCAT_HOME/temp"
+WORKDIR="$TOMCAT_HOME/work"
+WARDIR1="$TOMCAT_HOME/webapps/openrdf-sesame"
+WARDIR2="$TOMCAT_HOME/webapps/openrdf-workbench"
+
+export TOMCAT_HOME=$BASEDIR
+
+if [ -z $TOMCAT_HOME -a -z $TOMCAT_NAME ]; then
+	echo Either TOMCAT_HOME or TOMCAT_NAME is not set. Exiting ...
+	exit 1
+fi
+
+[[ -f /etc/sysconfig/$TOMCAT_NAME ]] && . /etc/sysconfig/$TOMCAT_NAME
+
+function check_stop() {
+        echo ; echo Waiting $FORCE_KILL_WAIT seconds for Owlim to shut down ...
+	COUNTER=0
+	while [ $COUNTER -lt $FORCE_KILL_WAIT ]; do
+        	pgrep -fu tomcat $TOMCAT_NAME > /dev/null 2>&1
+        	RETVAL=$?
+        	[ $RETVAL -eq 1 ] && echo Tomcat has stopped successfully. && exit 0
+                sleep 1
+                echo -n .
+		let COUNTER=COUNTER+1
+        done
+	echo
+        if $FORCE_KILL; then
+                echo Forcing Tomcat to shutdown now ...
+                pkill -9 -fu tomcat ${name} > /dev/null 2>&1
+                sleep 1
+                echo Done.
+        else
+                echo Owlim is still running, but FORCE_KILL is not set so not going to do anything. 
+		exit 1
+        fi
+}
 
 case "$1" in start)
 
-	tempdir="$TOMCAT_HOME/temp"
-        workdir="$TOMCAT_HOME/work"
-        wardir1="$TOMCAT_HOME/webapps/openrdf-sesame"
-        wardir2="$TOMCAT_HOME/webapps/openrdf-workbench"
-
         echo Removing temp, work and exploded .war directories ...
+        rm -rf $TEMPDIR/* $WORKDIR/* $WARDIR1 $WARDIR2
 
-        rm -rf $tempdir/* $workdir/* $wardir1 $wardir2
-
-	echo -n "Starting ${name}: "
-        status -p $CATALINA_PID ${name} > /dev/null && failure || (su -p -s /bin/sh $USER -c "$TOMCAT_HOME/bin/catalina.sh start" > /dev/null && (touch $LOCKFILE ; success))
+	echo -n "Starting $TOMCAT_NAME: "
+        status -p $CATALINA_PID $TOMCAT_NAME > /dev/null && failure || (su -p -s /bin/sh $TOMCAT_USER -c "$TOMCAT_HOME/bin/catalina.sh start" > /dev/null && (touch $LOCKFILE ; success))
         echo
         ;;
   stop)
-        echo -n "Shutting down ${name}: "
-        status -p $CATALINA_PID ${name} > /dev/null && su -p -s /bin/sh $USER -c "$TOMCAT_HOME/bin/catalina.sh stop" > /dev/null && (rm -f $LOCKFILE ; success) || failure
-        echo
-        echo Checking if Tomcat has stopped ...
-        pgrep -fu tomcat ${name} > /dev/null 2>&1
-        RETVAL=$?
-        [ $RETVAL -eq 0 ] && echo Tomcat still running, waiting 30 seconds ...
-        [ $RETVAL -eq 1 ] && echo Tomcat has stopped successfully. && exit
-        for i in {1..30}
-        do
-                pgrep -fu tomcat ${name} > /dev/null 2>&1
-                RETVAL=$?
-                [ $RETVAL -eq 1 ] && exit
-                sleep 1
-                echo -n .
-        done
-        echo .
+        echo -n "Shutting down $TOMCAT_NAME: "
+        status -p $CATALINA_PID $TOMCAT_NAME > /dev/null && su -p -s /bin/sh $TOMCAT_USER -c "$TOMCAT_HOME/bin/catalina.sh stop" > /dev/null && (rm -f $LOCKFILE ; success) || failure
+	check_stop
         ;;
   restart)
         $0 stop
@@ -59,7 +77,7 @@ case "$1" in start)
        [ -e $LOCKFILE ] && $0 restart
        ;;
   status)
-        status -p $CATALINA_PID ${name}
+        status -p $CATALINA_PID $TOMCAT_NAME
         ;;
   *)
         echo "Usage: $0 {start|stop|restart|condrestart|status}"
