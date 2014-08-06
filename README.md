@@ -15,8 +15,8 @@ You need to obtain three files from Ontotext and place them inside the rpm/rpmbu
 
 They files you will need are:-
 
-    openrdf-workbench-7.4.38.war
-    openrdf-sesame-7.4.38.war
+    openrdf-sesame-5.4.7348.war
+    openrdf-workbench-5.4.7348.war
     owlim.license
 
 The version number of OWLIM-Enterprise you receive may be different. You will find the .war files inside the OWLIM .zip file you receive or from the Ontotext Maven repository.
