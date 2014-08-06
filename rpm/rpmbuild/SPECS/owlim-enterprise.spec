@@ -18,10 +18,18 @@ Requires: 	tomcat-native
 BuildRoot: 	%{_tmppath}/%{name}-%{version}-build
 BuildArch: 	noarch
 
+%define tomcat_version 7.0.55
+%define tomcat_url http://www.mirrorservice.org/sites/ftp.apache.org/tomcat/tomcat-7/v%{tomcat_version}/bin/apache-tomcat-%{tomcat_version}.tar.gz
+
 %description
 OWLIM-Enterprise is a replication cluster infrastructure based on OWLIM-SE. It offers industrial strength resilience and linearly scalable parallel query performance, with support for load-balancing and automatic fail-over.
 
 %prep
+if [ ! -e %{_sourcedir}/apache-tomcat-%{tomcat_version}.tar.gz ]
+then
+        wget %{tomcat_url} -P %{_sourcedir}
+fi
+
 if [ ! -e %{_sourcedir}/jmx.browser-1.2.0.war ]
 then
         wget http://downloads.sourceforge.net/project/ejtools/JMX/1.2.0/jmx.browser-1.2.0.war -P %{_sourcedir}
@@ -32,7 +40,7 @@ then
         wget https://psi-probe.googlecode.com/files/probe-2.3.3.zip  -P %{_sourcedir}
 fi
 
-%{__unzip} -o %{_sourcedir}/probe-2.3.3.zip -d %{_sourcedir}
+%{__unzip} -o %{_sourcedir}/probe-2.3.3.zip probe.war -d %{_sourcedir}
 
 %install
 %{__rm} -rf %{buildroot}
