@@ -4,6 +4,11 @@ package { 'puppet-lint':
   provider => gem
 }
 
+service { 'iptables':
+  ensure => stopped
+}
+
+
 package { [ 'autoconf',
             'automake',
             'binutils',
